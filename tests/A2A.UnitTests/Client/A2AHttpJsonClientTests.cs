@@ -821,6 +821,16 @@ public class A2AHttpJsonClientErrorInfoTests
         Assert.Contains("Custom error", ex.Message);
     }
 
+    [Theory]
+    [InlineData("A2A-PROTOCOL.ORG", A2AErrorCode.TaskNotFound)]
+    [InlineData("example.com", A2AErrorCode.InvalidRequest)]
+    public async Task ErrorInfo_DomainControlsWhetherReasonIsTrusted(string domain, A2AErrorCode expected)
+    {
+        var sut = CreateErrorInfoClient(HttpStatusCode.BadRequest, "TASK_NOT_FOUND", "remote error", domain: domain);
+        var ex = await Assert.ThrowsAsync<A2AException>(() => sut.GetTaskAsync(new GetTaskRequest { Id = "task-1" }));
+        Assert.Equal(expected, ex.ErrorCode);
+    }
+
     [Fact]
     public async Task PlainTextError_StillWorksWithoutErrorInfo()
     {
@@ -839,7 +849,7 @@ public class A2AHttpJsonClientErrorInfoTests
     }
 
     private static A2AHttpJsonClient CreateErrorInfoClient(
-        HttpStatusCode statusCode, string reason, string message, string mediaType = "application/json")
+        HttpStatusCode statusCode, string reason, string message, string mediaType = "application/json", string domain = "a2a-protocol.org")
     {
         var errorJson = JsonSerializer.Serialize(new
         {
@@ -854,7 +864,7 @@ public class A2AHttpJsonClientErrorInfoTests
                     {
                         @type = "type.googleapis.com/google.rpc.ErrorInfo",
                         reason,
-                        domain = "a2a-protocol.org"
+                        domain
                     }
                 }
             }

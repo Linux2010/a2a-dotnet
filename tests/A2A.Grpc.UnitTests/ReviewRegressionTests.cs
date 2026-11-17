@@ -62,6 +62,15 @@ public class ReviewRegressionTests
         Assert.Equal(A2AErrorCode.TaskNotCancelable, result.ErrorCode); // status-code fallback, not the foreign reason
     }
 
+    [Theory]
+    [InlineData("TASK_NOT_FOUND", "A2A-PROTOCOL.ORG")]
+    [InlineData("NOT_A_KNOWN_REASON", "a2a-protocol.org")]
+    public void ToA2AException_UntrustedOrUnknownReason_UsesStatusFallback(string reason, string domain)
+    {
+        var rpcException = BuildRpcException(StatusCode.FailedPrecondition, reason, domain);
+        Assert.Equal(A2AErrorCode.TaskNotCancelable, GrpcErrorMapping.ToA2AException(rpcException).ErrorCode);
+    }
+
     [Fact]
     public void ToA2AException_A2AErrorInfoDomain_IsHonored()
     {
