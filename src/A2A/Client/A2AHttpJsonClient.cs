@@ -187,7 +187,6 @@ public sealed class A2AHttpJsonClient : IA2AClient, IDisposable
             return await JsonSerializer.DeserializeAsync<TResult>(stream, A2AJsonUtilities.DefaultOptions, cancellationToken).ConfigureAwait(false)
                 ?? throw new A2AException("Failed to deserialize REST response.", A2AErrorCode.InternalError) { ActivatedExtensions = A2AResponseActivation.Read(response) };
         }
-        catch (A2AException) { throw; }
         catch (Exception ex)
         {
             A2ADiagnostics.ClientErrorCount.Add(1);
@@ -226,7 +225,6 @@ public sealed class A2AHttpJsonClient : IA2AClient, IDisposable
             return await JsonSerializer.DeserializeAsync<TResult>(stream, A2AJsonUtilities.DefaultOptions, cancellationToken).ConfigureAwait(false)
                 ?? throw new A2AException("Failed to deserialize REST response.", A2AErrorCode.InternalError) { ActivatedExtensions = A2AResponseActivation.Read(response) };
         }
-        catch (A2AException) { throw; }
         catch (Exception ex)
         {
             A2ADiagnostics.ClientErrorCount.Add(1);
@@ -262,7 +260,6 @@ public sealed class A2AHttpJsonClient : IA2AClient, IDisposable
             return await JsonSerializer.DeserializeAsync<TResult>(stream, A2AJsonUtilities.DefaultOptions, cancellationToken).ConfigureAwait(false)
                 ?? throw new A2AException("Failed to deserialize REST response.", A2AErrorCode.InternalError) { ActivatedExtensions = A2AResponseActivation.Read(response) };
         }
-        catch (A2AException) { throw; }
         catch (Exception ex)
         {
             A2ADiagnostics.ClientErrorCount.Add(1);
@@ -292,7 +289,6 @@ public sealed class A2AHttpJsonClient : IA2AClient, IDisposable
             using var response = await _httpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
             await EnsureSuccessOrThrowA2AExceptionAsync(response, cancellationToken).ConfigureAwait(false);
         }
-        catch (A2AException) { throw; }
         catch (Exception ex)
         {
             A2ADiagnostics.ClientErrorCount.Add(1);
@@ -354,11 +350,6 @@ public sealed class A2AHttpJsonClient : IA2AClient, IDisposable
             await EnsureSuccessOrThrowA2AExceptionAsync(response, cancellationToken).ConfigureAwait(false);
 
             stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (A2AException)
-        {
-            response?.Dispose();
-            throw;
         }
         catch (Exception ex)
         {
