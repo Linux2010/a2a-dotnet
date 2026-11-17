@@ -24,24 +24,6 @@ internal static class GrpcErrorMapping
     private const string ErrorDomain = "a2a-protocol.org";
     private const string StatusDetailsTrailer = "grpc-status-details-bin";
 
-    private static readonly Dictionary<string, A2AErrorCode> s_reasonToErrorCode = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["TASK_NOT_FOUND"] = A2AErrorCode.TaskNotFound,
-        ["TASK_NOT_CANCELABLE"] = A2AErrorCode.TaskNotCancelable,
-        ["PUSH_NOTIFICATION_NOT_SUPPORTED"] = A2AErrorCode.PushNotificationNotSupported,
-        ["UNSUPPORTED_OPERATION"] = A2AErrorCode.UnsupportedOperation,
-        ["CONTENT_TYPE_NOT_SUPPORTED"] = A2AErrorCode.ContentTypeNotSupported,
-        ["INVALID_AGENT_RESPONSE"] = A2AErrorCode.InvalidAgentResponse,
-        ["EXTENDED_AGENT_CARD_NOT_CONFIGURED"] = A2AErrorCode.ExtendedAgentCardNotConfigured,
-        ["EXTENSION_SUPPORT_REQUIRED"] = A2AErrorCode.ExtensionSupportRequired,
-        ["VERSION_NOT_SUPPORTED"] = A2AErrorCode.VersionNotSupported,
-        ["METHOD_NOT_FOUND"] = A2AErrorCode.MethodNotFound,
-        ["INVALID_PARAMS"] = A2AErrorCode.InvalidParams,
-        ["INVALID_REQUEST"] = A2AErrorCode.InvalidRequest,
-        ["PARSE_ERROR"] = A2AErrorCode.ParseError,
-        ["INTERNAL_ERROR"] = A2AErrorCode.InternalError,
-    };
-
     /// <summary>Maps an <see cref="A2AErrorCode"/> to the gRPC <see cref="StatusCode"/> per spec Section 5.4.</summary>
     /// <param name="code">The A2A error code to map.</param>
     public static StatusCode ToStatusCode(A2AErrorCode code) => A2AErrorCodeMapping.GetGrpcStatus(code) switch
@@ -101,7 +83,7 @@ internal static class GrpcErrorMapping
         var code = FromStatusCode(exception.StatusCode);
 
         if (TryReadReason(exception, out var reason)
-            && s_reasonToErrorCode.TryGetValue(reason, out var mapped))
+            && A2AErrorCodeMapping.TryGetErrorCode(reason, out var mapped))
         {
             code = mapped;
         }

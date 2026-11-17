@@ -395,25 +395,6 @@ public sealed class A2AHttpJsonClient : IA2AClient, IDisposable
         A2ADiagnostics.ClientStreamEventCount.Record(eventCount);
     }
 
-    /// <summary>Maps google.rpc.ErrorInfo <c>reason</c> values to A2A error codes per spec Section 5.4.</summary>
-    private static readonly Dictionary<string, A2AErrorCode> s_reasonToErrorCode = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["TASK_NOT_FOUND"] = A2AErrorCode.TaskNotFound,
-        ["TASK_NOT_CANCELABLE"] = A2AErrorCode.TaskNotCancelable,
-        ["PUSH_NOTIFICATION_NOT_SUPPORTED"] = A2AErrorCode.PushNotificationNotSupported,
-        ["UNSUPPORTED_OPERATION"] = A2AErrorCode.UnsupportedOperation,
-        ["CONTENT_TYPE_NOT_SUPPORTED"] = A2AErrorCode.ContentTypeNotSupported,
-        ["INVALID_AGENT_RESPONSE"] = A2AErrorCode.InvalidAgentResponse,
-        ["EXTENDED_AGENT_CARD_NOT_CONFIGURED"] = A2AErrorCode.ExtendedAgentCardNotConfigured,
-        ["EXTENSION_SUPPORT_REQUIRED"] = A2AErrorCode.ExtensionSupportRequired,
-        ["VERSION_NOT_SUPPORTED"] = A2AErrorCode.VersionNotSupported,
-        ["INVALID_REQUEST"] = A2AErrorCode.InvalidRequest,
-        ["INVALID_PARAMS"] = A2AErrorCode.InvalidParams,
-        ["PARSE_ERROR"] = A2AErrorCode.ParseError,
-        ["INTERNAL_ERROR"] = A2AErrorCode.InternalError,
-        ["METHOD_NOT_FOUND"] = A2AErrorCode.MethodNotFound,
-    };
-
     [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "Error types are registered in source-generated JsonContext.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "Error types are registered in source-generated JsonContext.")]
     private static async Task EnsureSuccessOrThrowA2AExceptionAsync(HttpResponseMessage response, CancellationToken cancellationToken)
@@ -445,7 +426,7 @@ public sealed class A2AHttpJsonClient : IA2AClient, IDisposable
                     var errorInfo = error.Details?.FirstOrDefault(d =>
                         string.Equals(d.Domain, "a2a-protocol.org", StringComparison.OrdinalIgnoreCase));
 
-                    if (errorInfo?.Reason is not null && s_reasonToErrorCode.TryGetValue(errorInfo.Reason, out var mapped))
+                    if (errorInfo?.Reason is not null && A2AErrorCodeMapping.TryGetErrorCode(errorInfo.Reason, out var mapped))
                     {
                         reasonErrorCode = mapped;
                     }

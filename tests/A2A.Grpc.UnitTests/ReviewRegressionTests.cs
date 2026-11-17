@@ -28,6 +28,29 @@ public class ReviewRegressionTests
         Assert.Equal(A2AErrorCode.InvalidParams, exception.ErrorCode);
     }
 
+    [Theory]
+    [InlineData("TASK_NOT_FOUND", A2AErrorCode.TaskNotFound)]
+    [InlineData("TASK_NOT_CANCELABLE", A2AErrorCode.TaskNotCancelable)]
+    [InlineData("PUSH_NOTIFICATION_NOT_SUPPORTED", A2AErrorCode.PushNotificationNotSupported)]
+    [InlineData("UNSUPPORTED_OPERATION", A2AErrorCode.UnsupportedOperation)]
+    [InlineData("CONTENT_TYPE_NOT_SUPPORTED", A2AErrorCode.ContentTypeNotSupported)]
+    [InlineData("INVALID_AGENT_RESPONSE", A2AErrorCode.InvalidAgentResponse)]
+    [InlineData("EXTENDED_AGENT_CARD_NOT_CONFIGURED", A2AErrorCode.ExtendedAgentCardNotConfigured)]
+    [InlineData("EXTENSION_SUPPORT_REQUIRED", A2AErrorCode.ExtensionSupportRequired)]
+    [InlineData("VERSION_NOT_SUPPORTED", A2AErrorCode.VersionNotSupported)]
+    [InlineData("INVALID_REQUEST", A2AErrorCode.InvalidRequest)]
+    [InlineData("INVALID_PARAMS", A2AErrorCode.InvalidParams)]
+    [InlineData("PARSE_ERROR", A2AErrorCode.ParseError)]
+    [InlineData("INTERNAL_ERROR", A2AErrorCode.InternalError)]
+    [InlineData("METHOD_NOT_FOUND", A2AErrorCode.MethodNotFound)]
+    [InlineData("tAsK_nOt_FoUnD", A2AErrorCode.TaskNotFound)]
+    [InlineData("NOT_A_KNOWN_REASON", A2AErrorCode.InternalError)]
+    public void ToA2AException_KnownReasonsAndUnknownFallback(string reason, A2AErrorCode expected)
+    {
+        var rpcException = BuildRpcException(StatusCode.Internal, reason, "a2a-protocol.org");
+        Assert.Equal(expected, GrpcErrorMapping.ToA2AException(rpcException).ErrorCode);
+    }
+
     [Fact]
     public void ToA2AException_ForeignErrorInfoDomain_IsIgnored()
     {
