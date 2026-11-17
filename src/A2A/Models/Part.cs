@@ -19,7 +19,7 @@ public enum PartContentCase
 }
 
 /// <summary>Represents a content part in the A2A protocol. Uses field-presence to indicate the content type.</summary>
-public sealed class Part
+public sealed class Part : IJsonOnSerializing, IJsonOnDeserialized
 {
     /// <summary>Gets or sets the text content.</summary>
     public string? Text { get; set; }
@@ -43,13 +43,39 @@ public sealed class Part
     public string? MediaType { get; set; }
 
     /// <summary>Gets which content field is currently set.</summary>
+    /// <exception cref="InvalidOperationException">Multiple alternatives are set.</exception>
     [JsonIgnore]
-    public PartContentCase ContentCase =>
-        Text is not null ? PartContentCase.Text :
-        Raw is not null ? PartContentCase.Raw :
-        Url is not null ? PartContentCase.Url :
-        Data is not null ? PartContentCase.Data :
-        PartContentCase.None;
+    public PartContentCase ContentCase
+    {
+        get
+        {
+            if ((Text is null ? 0 : 1) + (Raw is null ? 0 : 1) + (Url is null ? 0 : 1) + (Data is null ? 0 : 1) > 1)
+            {
+                throw new InvalidOperationException("Part cannot contain multiple content alternatives.");
+            }
+
+            return
+                Text is not null ? PartContentCase.Text :
+                Raw is not null ? PartContentCase.Raw :
+                Url is not null ? PartContentCase.Url :
+                Data is not null ? PartContentCase.Data :
+                PartContentCase.None;
+        }
+    }
+
+    void IJsonOnSerializing.OnSerializing() => _ = ContentCase;
+
+    void IJsonOnDeserialized.OnDeserialized()
+    {
+        try
+        {
+            _ = ContentCase;
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new JsonException(ex.Message, ex);
+        }
+    }
 
     /// <summary>Creates a text part.</summary>
     /// <param name="text">The text content.</param>

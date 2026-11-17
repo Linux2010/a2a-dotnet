@@ -181,8 +181,11 @@ public sealed class WebhookReceiverTests : IAsyncLifetime
     public async Task MultiplePayloadFields_AreRejected()
     {
         var notification = CreateNotification(StreamResponseCase.Task);
-        notification.Message = CreateNotification(StreamResponseCase.Message).Message;
+        var taskJson = JsonSerializer.Serialize(notification.Task, A2AJsonUtilities.DefaultOptions);
+        var messageJson = JsonSerializer.Serialize(CreateNotification(StreamResponseCase.Message).Message, A2AJsonUtilities.DefaultOptions);
         using var request = CreateRequest(notification);
+        request.Content!.Dispose();
+        request.Content = new StringContent($"{{\"task\":{taskJson},\"message\":{messageJson}}}", Encoding.UTF8, "application/a2a+json");
         using var response = await _client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
